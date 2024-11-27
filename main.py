@@ -7,10 +7,10 @@ from prediction import get_prediction
 symbol = 'SOLUSDT'
 
 time.sleep(60 - dt.datetime.now().second - 1)
-previous_list =
+previous_list = get_minute_data(symbol)
 
-buffer = []
-action_1 = False
+fresh_list = []
+action_flag = False
 time.sleep(60 - dt.datetime.now().second - 1)
 while True:
     '''Основной цикл'''
@@ -18,15 +18,15 @@ while True:
     now_is = dt.datetime.now().second
 
     if now_is == 58:
-        buffer = get_minute_data(symbol)
-        action_1 = True
+        fresh_list = get_minute_data(symbol)
+        action_flag = True
 
-    if now_is == 59 and action_1:
-        get_prediction(get_minute_data(symbol))
-        buffer.clear()
-        action_1 = False
+    if now_is == 59:
+        fresh_list = get_minute_data(symbol)
+        action_flag = True
 
-    elif action_1:
-        get_prediction(buffer)
-        buffer.clear()
-        action_1 = False
+    if action_flag:
+        action_flag = False
+        answer = get_prediction(fresh_list, previous_list)
+        previous_list = fresh_list
+        print(answer)

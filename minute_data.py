@@ -13,7 +13,7 @@ def get_minute_data(symbol):
         print(data)
         if data:
             last_candle = data[-1]
-            open_time = dt.datetime.fromtimestamp(last_candle[0] / 1000)  # Время открытия свечи
+            # open_time = dt.datetime.fromtimestamp(last_candle[0] / 1000)  # Время открытия свечи
             # open_price = float(last_candle[1])  # Цена открытия
             high_price = float(last_candle[2])  # Максимальная цена
             low_price = float(last_candle[3])  # Минимальная цена
