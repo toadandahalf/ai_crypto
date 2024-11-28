@@ -1,0 +1,11 @@
+model_1 = keras.models.Sequential([
+
+    keras.layers.Conv2D(filters=(WINDOW_HEIGHT - 2) * (WINDOW_LENGHT - 2), kernel_size=(3, 3), padding='valid',
+strides=(1, 1), input_shape=(WINDOW_HEIGHT, WINDOW_LENGHT, 1)),
+
+    keras.layers.Reshape((-1, (WINDOW_HEIGHT - 2) * (WINDOW_LENGHT - 2))),
+
+    keras.layers.LSTM((WINDOW_HEIGHT - 2) * (WINDOW_LENGHT - 2), activation='relu'),
+
+    keras.layers.Dense(1)
+])

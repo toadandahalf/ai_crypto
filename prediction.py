@@ -5,5 +5,5 @@ model = keras.models.load_model('main_model.keras')
 
 
 def get_prediction(fresh_list, previous_list):
-
+    data = get_preprocessing(fresh_list, previous_list)
     return model.predict()
