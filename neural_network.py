@@ -13,7 +13,7 @@ PERIOD_LONG_MACD = 13
 PERIOD_SHORT_MACD = 6
 PERIOD_SIGNAL_MACD = 9
 STEP_BACK = max(PERIOD_SIGNAL_MACD, PERIOD_SHORT_MACD, PERIOD_LONG_MACD, PERIODS_RSI, WINDOW_HEIGHT)
-WAY = 'raw_data_SOL'
+WAY = 'raw_data_LTC'
 
 file_names = os.listdir(WAY)
 
@@ -21,13 +21,14 @@ if file_names[0] == '.ipynb_checkpoints':
     file_names.pop(0)
 
 pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
 np.set_printoptions(threshold=np.inf)
 
 
 # source = 'https://public.bybit.com'
 
 
-def data_converter(csv_names, WINDOW_HEIGHT, way):
+def data_converter(csv_names, window_height, way):
     '''из первого датасета берет с конца данные размера окна'''
 
     raw_list = []
@@ -54,10 +55,12 @@ def data_converter(csv_names, WINDOW_HEIGHT, way):
     raw_list = macd(raw_list, period_long=PERIOD_LONG_MACD, period_short=PERIOD_SHORT_MACD,
                     period_signal=PERIOD_SIGNAL_MACD)
     raw_list = rsi(raw_list, periods=PERIODS_RSI)
-    raw_list = close_trend_heatmap(raw_list)
     raw_list = macd_val_to_signal_heatmap(raw_list, 'macd_val', 'macd_signal_line')
     raw_list = macd_to_zero_heatmap(raw_list, 'macd_val')
+    raw_list = close_trend_heatmap(raw_list)
     raw_list = raw_list.dropna()
+
+    print(raw_list[:2])
 
     scaler = MinMaxScaler()
     scaler.fit(raw_list)
@@ -65,10 +68,10 @@ def data_converter(csv_names, WINDOW_HEIGHT, way):
     joblib.dump(scaler, 'minmax_scaler.pkl')
 
     raw_list = pd.DataFrame(raw_list,
-                            columns=['high', 'low', 'close', 'macd_val', 'macd_signal_line', 'rsi', 'val_is_low',
-                                     'val_is_high', 'close_went_down', 'close_went_up', 'macd_is_low', 'macd_is_high'])
+                            columns=['high', 'low', 'close', 'macd_val', 'macd_signal_line', 'rsi', 'val_is_high',
+                                     'val_is_low', 'macd_is_high', 'macd_is_low', 'close_went_up', 'close_went_down'])
 
-    for i in range(1, len(raw_list) - WINDOW_HEIGHT):
+    for i in range(1, len(raw_list) - window_height):
         buffer = []
         for j in range(WINDOW_HEIGHT):
             buffer.append([
@@ -81,7 +84,9 @@ def data_converter(csv_names, WINDOW_HEIGHT, way):
                 float(raw_list.iloc[i + j]['macd_is_high']),
                 float(raw_list.iloc[i + j]['macd_is_low']),
                 float(raw_list.iloc[i + j]['val_is_high']),
-                float(raw_list.iloc[i + j]['val_is_low'])
+                float(raw_list.iloc[i + j]['val_is_low']),
+                float(raw_list.iloc[i + j]['close_went_up']),
+                float(raw_list.iloc[i + j]['close_went_down']),
             ])
 
         labels.append([
@@ -106,10 +111,12 @@ y = converted_data[1]
 WINDOW_LENGTH = len(x[0][0])
 
 model_2 = keras.models.Sequential([
-    keras.layers.LSTM(WINDOW_LENGTH, activation='sigmoid'),
-
+    keras.layers.LSTM(12, activation='sigmoid', input_shape=(WINDOW_HEIGHT, WINDOW_LENGTH), return_sequences=True),
+    keras.layers.LSTM(8, activation='sigmoid'),
     keras.layers.Dense(2, activation='sigmoid')
 ])
+
+model_2.compile(optimizer='adam', loss='binary_crossentropy')
 
 chosen_model = model_2
 

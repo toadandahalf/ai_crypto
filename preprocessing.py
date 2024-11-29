@@ -27,10 +27,8 @@ def get_preprocessing(data):
 
     scaler = joblib.load('minmax_scaler.pkl')
     df = scaler.transform(df)
-
-    del df['close_went_up']
-    del df['close_went_down']
     df = pandas.DataFrame(df,
                           columns=['high', 'low', 'close', 'macd_val', 'macd_signal_line', 'rsi', 'val_is_low',
-                                   'val_is_high', 'macd_is_low', 'macd_is_high'])
-    return df.iloc[1]
+                                   'val_is_high', 'macd_is_low', 'macd_is_high', 'close_went_up', 'close_went_down'])
+
+    return [df.iloc[-1]]
