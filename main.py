@@ -7,12 +7,19 @@ from prediction import get_prediction
 symbol = 'SOLUSDT'
 
 buffer = []
-for i in range(14):
-    time.sleep(60 - dt.datetime.now().second - 1)
-    buffer.append(get_minute_data(symbol))
-time.sleep(60 - dt.datetime.now().second - 1)
 
-action_flag = False
+while len(buffer) < 14:
+    '''Цикл подготовки буфера'''
+
+    now_is = dt.datetime.now().second
+
+    if now_is == 59:
+        buffer.append(get_minute_data(symbol))
+        print(f'buffer: {len(buffer)}/14, time: {dt.datetime.now()}')
+        time.sleep(50)
+    time.sleep(0.5)
+
+action_flag_1 = False
 while True:
     '''Основной цикл'''
 
@@ -21,10 +28,13 @@ while True:
     if now_is == 59:
         buffer.append(get_minute_data(symbol))
         buffer.pop(0)
-        action_flag = True
+        print(f'buffer: {len(buffer)}/14, time: {dt.datetime.now()}')
+        action_flag_1 = True
 
-    if action_flag:
-        action_flag = False
+    if action_flag_1:
+        action_flag_1 = False
         answer = get_prediction(buffer)
         print(answer)
+        time.sleep(50)
+
     time.sleep(0.5)

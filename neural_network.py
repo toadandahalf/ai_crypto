@@ -94,6 +94,8 @@ def data_converter(csv_names, WINDOW_HEIGHT, way):
     features = np.array(features)
     labels = np.array(labels)
 
+    print(labels[0], features[0])
+
     return [features, labels]
 
 
@@ -101,10 +103,10 @@ converted_data = data_converter(file_names, WINDOW_HEIGHT, WAY)
 
 x = converted_data[0]
 y = converted_data[1]
-WINDOW_LENGHT = len(x[0][0])
+WINDOW_LENGTH = len(x[0][0])
 
 model_2 = keras.models.Sequential([
-    keras.layers.LSTM(WINDOW_LENGHT, activation='sigmoid'),
+    keras.layers.LSTM(WINDOW_LENGTH, activation='sigmoid'),
 
     keras.layers.Dense(2, activation='sigmoid')
 ])

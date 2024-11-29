@@ -1,3 +1,5 @@
+import random
+
 import pandas
 import numpy
 from sklearn.preprocessing import StandardScaler
@@ -18,16 +20,17 @@ def get_preprocessing(data):
     df = macd(df, period_long=PERIOD_LONG_MACD, period_short=PERIOD_SHORT_MACD,
               period_signal=PERIOD_SIGNAL_MACD)
     df = rsi(df, periods=PERIODS_RSI)
-    df = close_trend_heatmap(df)
     df = macd_val_to_signal_heatmap(df, 'macd_val', 'macd_signal_line')
     df = macd_to_zero_heatmap(df, 'macd_val')
-    print(df)
+    df = close_trend_heatmap(df)
+    df = df.dropna()
+
     scaler = joblib.load('minmax_scaler.pkl')
-    # scaler.transform()
+    df = scaler.transform(df)
 
-
-get_preprocessing([[1, 2, 3],
-                   [1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 9, 3], [1, 2, 3], [1, 2, 3],
-                   [1, 2, 3], [1, 2, 3], [1, 4, 3], [1, 2, 3],
-                   [2, 2, 3], [1, 2, 3], [1, 2, 3], [1, 8, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3],
-                   [1, 2, 3], [1, 2, 3], [1, 2, 3]])
+    del df['close_went_up']
+    del df['close_went_down']
+    df = pandas.DataFrame(df,
+                          columns=['high', 'low', 'close', 'macd_val', 'macd_signal_line', 'rsi', 'val_is_low',
+                                   'val_is_high', 'macd_is_low', 'macd_is_high'])
+    return df.iloc[1]

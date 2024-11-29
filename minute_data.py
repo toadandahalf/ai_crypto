@@ -10,7 +10,6 @@ def get_minute_data(symbol):
         response.raise_for_status()  # Проверка на ошибки HTTP
         data = response.json()
 
-        print(data)
         if data:
             last_candle = data[-1]
             # open_time = dt.datetime.fromtimestamp(last_candle[0] / 1000)  # Время открытия свечи
