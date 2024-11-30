@@ -31,4 +31,7 @@ def get_preprocessing(data):
                           columns=['high', 'low', 'close', 'macd_val', 'macd_signal_line', 'rsi', 'val_is_low',
                                    'val_is_high', 'macd_is_low', 'macd_is_high', 'close_went_up', 'close_went_down'])
 
-    return [df.iloc[-1]]
+    return df.iloc[-1].values.reshape(1, 1, -1)
+
+
+# print(get_preprocessing([[random.randint(100, 150) for i in range(3)] for ii in range(14)]))

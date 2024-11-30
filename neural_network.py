@@ -60,8 +60,6 @@ def data_converter(csv_names, window_height, way):
     raw_list = close_trend_heatmap(raw_list)
     raw_list = raw_list.dropna()
 
-    print(raw_list[:2])
-
     scaler = MinMaxScaler()
     scaler.fit(raw_list)
     raw_list = scaler.transform(raw_list)
@@ -111,8 +109,7 @@ y = converted_data[1]
 WINDOW_LENGTH = len(x[0][0])
 
 model_2 = keras.models.Sequential([
-    keras.layers.LSTM(12, activation='sigmoid', input_shape=(WINDOW_HEIGHT, WINDOW_LENGTH), return_sequences=True),
-    keras.layers.LSTM(8, activation='sigmoid'),
+    keras.layers.LSTM(12, activation='sigmoid'),
     keras.layers.Dense(2, activation='sigmoid')
 ])
 
@@ -125,3 +122,5 @@ chosen_model.compile(optimizer='adam', loss='mae', metrics=['accuracy'])
 chosen_model.fit(x, y, epochs=10)
 
 chosen_model.save('main_model.keras')
+
+print(x[0])
