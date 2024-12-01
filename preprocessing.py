@@ -1,8 +1,4 @@
-import random
-
 import pandas
-import numpy
-from sklearn.preprocessing import StandardScaler
 import joblib
 from indicators import macd, rsi, close_trend_heatmap, macd_val_to_signal_heatmap, macd_to_zero_heatmap
 
