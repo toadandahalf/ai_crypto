@@ -1,7 +1,7 @@
 from telegram.ext import Application, CommandHandler, ConversationHandler
 from telegram import ReplyKeyboardMarkup
 
-from constants_here import BOT_TOKEN
+from constants_here import BOT_TOKEN, SYMBOL
 
 import time
 import datetime as dt
@@ -9,10 +9,13 @@ import datetime as dt
 from minute_data import get_minute_data
 from prediction import get_prediction
 
+import keras
+
 
 async def start(update, context):
-    symbol = 'SOLUSDT'
+    symbol = f'{SYMBOL}USDT'
     buffer = []
+    model = keras.models.load_model('main_model.keras')
 
     await update.message.reply_text('Бот начал работу, заполнение буфера',
                                     reply_markup=ReplyKeyboardMarkup([['/stop']]))
@@ -43,9 +46,9 @@ async def start(update, context):
 
         if action_flag_1:
             action_flag_1 = False
-            answer = get_prediction(buffer)
+            answer = get_prediction(buffer, model)
             await update.message.reply_text(f'{"ВВЕРХ" if answer == "up" else "ВНИЗ"}'
-                                            f' на минуту {int(now_is_m % 60 + 1)},'
+                                            f' на минуте {int(now_is_m % 60 + 1)},'
                                             f' символ: {symbol}', reply_markup=ReplyKeyboardMarkup([['/stop']]))
             time.sleep(50)
 
@@ -59,6 +62,7 @@ async def stop(update, context):
 
 
 def main():
+
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("stop", stop))
     application.add_handler(CommandHandler("start", start))

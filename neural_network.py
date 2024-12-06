@@ -5,15 +5,12 @@ import keras
 import os
 import joblib
 from indicators import macd, rsi, close_trend_heatmap, macd_to_zero_heatmap, macd_val_to_signal_heatmap
+from constants_here import SYMBOL, WINDOW_HEIGHT, PERIODS_RSI, PERIOD_SIGNAL_MACD, PERIOD_SHORT_MACD, PERIOD_LONG_MACD,\
+    EPOCHS
 
-EPOCHS = 20
-WINDOW_HEIGHT = 1
-PERIODS_RSI = 7
-PERIOD_LONG_MACD = 13
-PERIOD_SHORT_MACD = 6
-PERIOD_SIGNAL_MACD = 9
+
 STEP_BACK = max(PERIOD_SIGNAL_MACD, PERIOD_SHORT_MACD, PERIOD_LONG_MACD, PERIODS_RSI, WINDOW_HEIGHT)
-WAY = 'raw_data_LUNA'
+WAY = f'raw_data_{SYMBOL}'
 
 file_names = os.listdir(WAY)
 
@@ -24,8 +21,8 @@ pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 np.set_printoptions(threshold=np.inf)
 
-
 # source = 'https://public.bybit.com'
+from converter_2 import data_converter_2
 
 
 def data_converter(csv_names, window_height, way):
@@ -69,7 +66,7 @@ def data_converter(csv_names, window_height, way):
                             columns=['high', 'low', 'close', 'macd_val', 'macd_signal_line', 'rsi', 'val_is_high',
                                      'val_is_low', 'macd_is_high', 'macd_is_low', 'close_went_up', 'close_went_down'])
 
-    for i in range(1, len(raw_list) - window_height):
+    for i in range(1, len(raw_list) - window_height - 1, 2):
         buffer = []
         for j in range(WINDOW_HEIGHT):
             buffer.append([
@@ -87,10 +84,33 @@ def data_converter(csv_names, window_height, way):
                 float(raw_list.iloc[i + j]['close_went_down']),
             ])
 
-        labels.append([
-            float(raw_list.iloc[i + j + 1]['close_went_up']),
-            float(raw_list.iloc[i + j + 1]['close_went_down'])
-        ])
+            features.append(buffer)
+            buffer = []
+
+            buffer.append([
+                float(1 - raw_list.iloc[i + j + 1]['high']),
+                float(1 - raw_list.iloc[i + j + 1]['rsi']),
+                float(1 - raw_list.iloc[i + j + 1]['close']),
+                float(1 - raw_list.iloc[i + j + 1]['low']),
+                float(1 - raw_list.iloc[i + j + 1]['macd_val']),
+                float(1 - raw_list.iloc[i + j + 1]['macd_signal_line']),
+                float(1 - raw_list.iloc[i + j + 1]['macd_is_high']),
+                float(1 - raw_list.iloc[i + j + 1]['macd_is_low']),
+                float(1 - raw_list.iloc[i + j + 1]['val_is_high']),
+                float(1 - raw_list.iloc[i + j + 1]['val_is_low']),
+                float(1 - raw_list.iloc[i + j + 1]['close_went_up']),
+                float(1 - raw_list.iloc[i + j + 1]['close_went_down']),
+            ])
+
+        # labels.append([
+        #     float(raw_list.iloc[i + j + 1]['close_went_up']),
+        #     float(raw_list.iloc[i + j + 1]['close_went_down'])
+        # ])
+
+        labels.append([float(1) if raw_list.iloc[i + j + 1]['close_went_up'] >
+                                   raw_list.iloc[i + j + 1]['close_went_down'] else float(0)])
+        labels.append([float(0) if raw_list.iloc[i + j + 2]['close_went_up'] >
+                                   raw_list.iloc[i + j + 2]['close_went_down'] else float(1)])
 
         features.append(buffer)
 
@@ -102,18 +122,22 @@ def data_converter(csv_names, window_height, way):
     return [features, labels]
 
 
-converted_data = data_converter(file_names, WINDOW_HEIGHT, WAY)
+converted_data = data_converter_2(file_names, WINDOW_HEIGHT, WAY)
+print(converted_data[:100])
+raise Exception
 
 x = converted_data[0]
 y = converted_data[1]
 WINDOW_LENGTH = len(x[0][0])
 
+'''Модель тут'''
 model_2 = keras.models.Sequential([
     keras.layers.LSTM(12, activation='sigmoid'),
-    keras.layers.Dense(2, activation='sigmoid')
+    #    keras.layers.SimpleRNN(10, activation='relu'),
+    keras.layers.Dense(1, activation='sigmoid')
 ])
 
-model_2.compile(optimizer='adam', loss='binary_crossentropy')
+model_2.compile(optimizer='adam', loss='mae')
 
 chosen_model = model_2
 
@@ -124,3 +148,14 @@ chosen_model.fit(x, y, epochs=10)
 chosen_model.save('main_model.keras')
 
 print(x[0])
+
+minus, plus = 0, 0
+for i in chosen_model.predict(x):
+    if i > 0.5:
+        plus += 1
+        print(1, end='')
+    else:
+        minus += 1
+        print(0, end='')
+print()
+print(minus, plus, 'minus, plus')
