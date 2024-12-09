@@ -62,6 +62,7 @@ async def stop(update, context):
 
 
 def main():
+    print('main_tg is active')
 
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("stop", stop))
