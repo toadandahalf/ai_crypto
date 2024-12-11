@@ -61,7 +61,9 @@ def data_converter(csv_names, window_height, way):
     raw_list = pd.DataFrame(raw_list,
                             columns=['high', 'low', 'close', 'macd_val', 'macd_signal_line', 'rsi', 'val_is_high',
                                      'val_is_low', 'macd_is_high', 'macd_is_low', 'close_went_up', 'close_went_down'])
-    raw_list = deleter(raw_list)
+
+    print(raw_list[:10])
+    # raw_list = deleter(raw_list)
 
     for i in range(1, len(raw_list) - window_height - 1):
         buffer = list()
@@ -88,14 +90,12 @@ def data_converter(csv_names, window_height, way):
     features = np.array(features)
     labels = np.array(labels)
 
-    print(labels[0], features[0])
-
     return features, labels
 
 
 x, y = data_converter(file_names, WINDOW_HEIGHT, WAY)
-x_test, y_test, x_train, y_train = x[190000:], y[190000], x[:190000], y[:190000]
-print(x[:10], y[:10], sep='\n')
+x_test, y_test, x_train, y_train = x[190000:], y[190000:], x[:190000], y[:190000]
+print(x[:3], y[:3], sep='\n')
 
 '''Модель тут'''
 model_2 = keras.models.Sequential([
@@ -105,29 +105,13 @@ model_2 = keras.models.Sequential([
     keras.layers.Dense(2, activation='sigmoid')
 ])
 
-model_1 = keras.models.Sequential([
-
-    keras.layers.Conv2D(filters=(WINDOW_HEIGHT - 2) * (12 - 2), kernel_size=(3, 3), padding='valid',
-                        strides=(1, 1), input_shape=(WINDOW_HEIGHT, 12, 1)),
-
-    keras.layers.Reshape((-1, (WINDOW_HEIGHT - 2) * (12 - 2))),
-
-    keras.layers.LSTM((WINDOW_HEIGHT - 2) * (12 - 2), activation='relu'),
-
-    keras.layers.Dense(2)
-])
-
-model_3 = keras.models.Sequential([
-    keras.layers.SimpleRNN(12, activation='sigmoid'),
-
-    keras.layers.Dense(2)
-])
-
 chosen_model = model_2
 
 chosen_model.compile(optimizer='adam', loss='mae', metrics=['accuracy'])
 
-chosen_model.fit(x, y, epochs=EPOCHS)
+chosen_model.fit(x_train, y_train, epochs=EPOCHS)
+
+chosen_model.evaluate(x_test, y_test)
 
 chosen_model.save('main_model.keras')
 
