@@ -1,8 +1,8 @@
 import requests
-# import datetime as dt
 
 
 def get_minute_data(symbol):
+    """Функция для получения данных в режиме реального времени"""
     url = f'https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1m&limit=1'
 
     try:
