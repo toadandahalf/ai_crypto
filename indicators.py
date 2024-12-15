@@ -93,3 +93,8 @@ def macd_to_zero_heatmap(data, macd_val):
 
     return data
 
+
+def target_ARIMA(data):
+    data['target'] = (data['close'] < data['close'].shift(-1)).astype(int)
+
+    return data
