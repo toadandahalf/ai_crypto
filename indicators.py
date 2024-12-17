@@ -73,21 +73,21 @@ def rsi(data, periods=14, close_col='close'):
     return data.drop(['rsi_u', 'rsi_d'], axis=1)
 
 
-def close_trend_heatmap(data):
+def close_trend_one_hot(data):
     data['close_went_up'] = (data['close'] > data['close'].shift(1)).astype(int)
     data['close_went_down'] = (data['close'] <= data['close'].shift(1)).astype(int)
 
     return data
 
 
-def macd_val_to_signal_heatmap(data, macd_val, macd_signal_line):
+def macd_val_to_signal_one_hot(data, macd_val, macd_signal_line):
     data['val_is_high'] = (data[macd_val] > data[macd_signal_line]).astype(int)
     data['val_is_low'] = (data[macd_val] <= data[macd_signal_line]).astype(int)
 
     return data
 
 
-def macd_to_zero_heatmap(data, macd_val):
+def macd_to_zero_one_hot(data, macd_val):
     data['macd_is_high'] = (data[macd_val] > 0).astype(int)
     data['macd_is_low'] = (data[macd_val] <= 0).astype(int)
 

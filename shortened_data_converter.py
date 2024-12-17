@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
-from indicators import macd, rsi, macd_to_zero_heatmap, macd_val_to_signal_heatmap, close_trend_heatmap
+from indicators import macd, rsi, macd_to_zero_one_hot, macd_val_to_signal_one_hot, close_trend_one_hot
 import os
 
 
@@ -50,9 +50,9 @@ def shortened_data_converter(way,
     raw_list = macd(raw_list, period_long=period_long_macd,
                     period_short=period_short_macd, period_signal=period_signal_macd)
     raw_list = rsi(raw_list, periods=periods_rsi)
-    raw_list = macd_val_to_signal_heatmap(raw_list, 'macd_val', 'macd_signal_line')
-    raw_list = macd_to_zero_heatmap(raw_list, 'macd_val')
-    raw_list = close_trend_heatmap(raw_list)
+    raw_list = macd_val_to_signal_one_hot(raw_list, 'macd_val', 'macd_signal_line')
+    raw_list = macd_to_zero_one_hot(raw_list, 'macd_val')
+    raw_list = close_trend_one_hot(raw_list)
 
     """Ручная проверка"""
     print(raw_list[:10])
